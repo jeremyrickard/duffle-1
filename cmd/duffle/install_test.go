@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/deislabs/cnab-go/bundle/definition"
 	"log"
 	"os"
 	"path/filepath"
@@ -57,14 +58,26 @@ func TestGetBundle(t *testing.T) {
 func TestOverrides(t *testing.T) {
 	is := assert.New(t)
 	// overrides(overrides []string, paramDefs map[string]bundle.ParameterDefinition)
-	defs := map[string]bundle.ParameterDefinition{
-		"first":  {DataType: "string"},
-		"second": {DataType: "bool"},
-		"third":  {DataType: "int"},
+
+	defs := definition.Definitions{
+		"first": &definition.Schema{
+			Type: "string",
+		},
+		"second": &definition.Schema{
+			Type: "boolean",
+		},
+		"third": &definition.Schema{
+			Type: "integer",
+		},
+	}
+	params := map[string]bundle.ParameterDefinition{
+		"first":  {Definition: "first"},
+		"second": {Definition: "second"},
+		"third":  {Definition: "third"},
 	}
 
 	setVals := []string{"first=foo", "second=true", "third=2", "fourth"}
-	o, err := overrides(setVals, defs)
+	o, err := overrides(setVals, defs, params)
 	is.NoError(err)
 
 	is.Len(o, 3)
@@ -73,6 +86,6 @@ func TestOverrides(t *testing.T) {
 	is.Equal(o["third"].(int), 2)
 
 	// We expect an error if we pass a param that was not defined:
-	_, err = overrides([]string{"undefined=foo"}, defs)
+	_, err = overrides([]string{"undefined=foo"}, defs, params)
 	is.Error(err)
 }

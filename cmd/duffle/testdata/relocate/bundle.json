@@ -1,5 +1,6 @@
 {
   "name": "testrelocate",
+  "schemaVersion": "v1.0.0-WD",
   "version": "0.1",
   "description": "a bundle with images",
   "invocationImages": [

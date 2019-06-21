@@ -10,20 +10,26 @@ import (
 
 func TestGenCredentialSet(t *testing.T) {
 	name := "zed"
-	credlocs := map[string]bundle.Location{
+	bunCreds := map[string]bundle.Credential{
 		"first": {
-			EnvironmentVariable: "FIRST_VAR",
+			Location: bundle.Location{
+				EnvironmentVariable: "FIRST_VAR",
+			},
 		},
 		"second": {
-			EnvironmentVariable: "SECOND_VAR",
-			Path:                "/second/path",
+			Location: bundle.Location{
+				EnvironmentVariable: "SECOND_VAR",
+				Path:                "/second/path",
+			},
 		},
 		"third": {
-			Path: "/third/path",
+			Location: bundle.Location{
+				Path: "/third/path",
+			},
 		},
 	}
 	is := assert.New(t)
-	creds, err := genCredentialSet(name, credlocs, genEmptyCredentials)
+	creds, err := genCredentialSet(name, bunCreds, genEmptyCredentials)
 	is.NoError(err)
 	is.Equal(creds.Name, name)
 	is.Len(creds.Credentials, 3)

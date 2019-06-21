@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/deislabs/cnab-go/bundle/definition"
 	"io"
 	"io/ioutil"
 	"path/filepath"
@@ -182,7 +183,7 @@ func getBundleFilepath(bun, homePath string) (string, error) {
 }
 
 // overrides parses the --set data and returns values that should override other params.
-func overrides(overrides []string, paramDefs map[string]bundle.ParameterDefinition) (map[string]interface{}, error) {
+func overrides(overrides []string, defs definition.Definitions, params map[string]bundle.ParameterDefinition) (map[string]interface{}, error) {
 	res := map[string]interface{}{}
 	for _, p := range overrides {
 		pair := strings.SplitN(p, "=", 2)
@@ -192,15 +193,18 @@ func overrides(overrides []string, paramDefs map[string]bundle.ParameterDefiniti
 			// a parameter in the file.
 			continue
 		}
-		def, ok := paramDefs[pair[0]]
+
+		param, ok := params[pair[0]]
 		if !ok {
 			return res, fmt.Errorf("parameter %s not defined in bundle", pair[0])
 		}
-
 		if _, ok := res[pair[0]]; ok {
 			return res, fmt.Errorf("parameter %q specified multiple times", pair[0])
 		}
-
+		def, ok := defs[param.Definition]
+		if !ok {
+			return res, fmt.Errorf("definition %s for parameter %s not defined in bundle", param.Definition, pair[0])
+		}
 		var err error
 		res[pair[0]], err = def.ConvertValue(pair[1])
 		if err != nil {
@@ -230,7 +234,7 @@ func calculateParamValues(bun *bundle.Bundle, valuesFile string, setParams, setF
 		}
 
 	}
-	overridden, err := overrides(setParams, bun.Parameters)
+	overridden, err := overrides(setParams, bun.Definitions, bun.Parameters.Fields)
 	if err != nil {
 		return vals, err
 	}
@@ -246,7 +250,7 @@ func calculateParamValues(bun *bundle.Bundle, valuesFile string, setParams, setF
 		}
 
 		// Check that this is a known param
-		if _, ok := bun.Parameters[parts[0]]; !ok {
+		if _, ok := bun.Parameters.Fields[parts[0]]; !ok {
 			return vals, fmt.Errorf("bundle does not have a parameter named %q", parts[0])
 		}
 

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/deislabs/cnab-go/bundle/definition"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -34,6 +35,18 @@ func TestUpgradePersistsClaim(t *testing.T) {
 		InvocationImages: []bundle.InvocationImage{
 			{
 				BaseImage: bundle.BaseImage{Image: "foo/bar:0.1.0", ImageType: "docker"},
+			},
+		},
+		Definitions: definition.Definitions{
+			"one": &definition.Schema{
+				Type: "string",
+			},
+		},
+		Parameters: &bundle.ParametersDefinition{
+			Fields: map[string]bundle.ParameterDefinition{
+				"one": bundle.ParameterDefinition{
+					Definition: "one",
+				},
 			},
 		},
 	}
